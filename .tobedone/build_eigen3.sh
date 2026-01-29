@@ -1,0 +1,29 @@
+#!/bin/bash
+EIGEN_HOME=/path/where/you/would/install/eigen3
+cmake .. \
+  -DCMAKE_INSTALL_PREFIX=$EIGEN_HOME \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_VERBOSE_MAKEFILE=OFF \
+  -DEIGEN_BUILD_DEMOS=OFF \
+  -DEIGEN_BUILD_DOC=OFF \
+  -DEIGEN_BUILD_TESTING=OFF \
+  -DEIGEN_BUILD_PKGCONFIG=ON \
+  -DEIGEN_BUILD_BTL=OFF \
+  -DEIGEN_BUILD_BLAS=OFF \
+  -DEIGEN_BUILD_LAPACK=OFF \
+  -DEIGEN_BUILD_SPBENCH=OFF \
+  -DEIGEN_BUILD_AOCL_BENCH=OFF \
+  -DCMAKE_C_COMPILER=$(which gcc) \
+  -DCMAKE_CXX_COMPILER=$(which g++)
+make install
+if [ "X${CMAKE_PREFIX_PATH}X" = "XX" ]
+then
+  CMAKE_PREFIX=$EIGEN_HOME
+else
+  CMAKE_PREFIX=${EIGEN_HOME}:${CMAKE_PREFIX_PATH}
+fi
+export CMAKE_PREFIX_PATH=$CMAKE_PREFIX
+mkdir -p $EIGEN_HOME/lib/cmake
+cd $EIGEN_HOME/lib/cmake
+ln -s ../../share/eigen3/cmake eigen3
+cd - > /dev/null

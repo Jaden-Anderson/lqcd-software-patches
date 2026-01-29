@@ -1,0 +1,133 @@
+In file included from /path/to/quda/build/lib/coarsecoarse_op_32_32.cu:1:
+In file included from /path/to/quda/lib/coarsecoarse_op.hpp:9:
+In file included from /path/to/quda/lib/coarse_op.cuh:3:
+In file included from /path/to/quda/lib/../include/kernels/coarse_op_kernel.cuh:13:
+In file included from /path/to/quda/include/targets/hip/shared_memory_cache_helper.h:1:
+/path/to/quda/include/targets/hip/../generic/shared_memory_cache_helper.h:127:7: error: no matching constructor for initialization of 'SharedMemory<atom_t<complex<int>[8][8][4][2][2]>, SizeDims<DimsStaticConditional<2, 1, 1>, sizeof(complex<int>[8][8][4][2][2]) / sizeof(atom_t<complex<int>[8][8][4][2][2]>)>, void>' (aka 'SharedMemory<HIP_vector_type<int, 4>, SizeDims<quda::DimsStaticConditional<2, 1, 1>, sizeof(quda::complex<int>[8][8][4][2][2]) / sizeof(atom_t<complex<int>[8][8][4][2][2]>)>, void>')
+      Smem(ops, arg...), block(D::dims(target::block_dim(), arg...)), stride(block.x * block.y * block.z)
+      ^    ~~~~~~~~
+/path/to/quda/lib/../include/kernels/coarse_op_kernel.cuh:1414:18: note: in instantiation of function template specialization 'quda::SharedMemoryCache<quda::complex<int>[8][8][4][2][2], quda::DimsStaticConditional<2, 1, 1>>::SharedMemoryCache<quda::SharedMemoryCache<quda::complex<int>[8][8][4][2][2], quda::DimsStaticConditional<2, 1, 1>>, quda::CalculateYArg<true, float, float, 2, 2, 32, 32, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER, true, int>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 4, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>>>' requested here
+      Cache<Arg> cache {ftor, arg};
+                 ^
+/path/to/quda/include/targets/hip/target_device.h:18:16: note: in instantiation of function template specialization 'quda::storeCoarseSharedAtomic_impl<true>::operator()<quda::MatrixTile<quda::complex<float>, 2, 2, false>[4], quda::Pack<QUDA_BACKWARDS>, quda::compute_vuv<quda::CalculateYArg<true, float, float, 2, 2, 32, 32, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER, true, int>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 4, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>>>>' requested here
+        return f<true>()(args...);
+               ^
+/path/to/quda/lib/../include/kernels/coarse_op_kernel.cuh:1645:7: note: in instantiation of function template specialization 'quda::storeCoarseSharedAtomic<quda::MatrixTile<quda::complex<float>, 2, 2, false>[4], quda::compute_vuv<quda::CalculateYArg<true, float, float, 2, 2, 32, 32, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER, true, int>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 4, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>>>>' requested here
+      storeCoarseSharedAtomic(vuv, isDiagonal, coarse_x_cb, coarse_parity, i0, j0, parity, ftor);
+      ^
+/path/to/quda/lib/../include/kernels/coarse_op_kernel.cuh:1734:7: note: in instantiation of function template specialization 'quda::computeVUV<1, quda::compute_vuv<quda::CalculateYArg<true, float, float, 2, 2, 32, 32, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER, true, int>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 4, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>>>>' requested here
+      computeVUV<nFace>(*this, parity, x_cb, c_row * arg.vuvTile.M, c_col * arg.vuvTile.N, parity_coarse, x_coarse_cb);
+      ^
+/path/to/quda/lib/../include/targets/generic/kernel_host.h:28:69: note: in instantiation of member function 'quda::compute_vuv<quda::CalculateYArg<true, float, float, 2, 2, 32, 32, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER, true, int>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 4, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>>>::operator()' requested here
+        for (int k = 0; k < static_cast<int>(arg.threads.z); k++) { f(i, j, k); }
+                                                                    ^
+/path/to/quda/lib/../include/tunable_nd.h:458:7: note: (skipping 2 contexts in backtrace; use -ftemplate-backtrace-limit=0 to see all)
+      Kernel3D_host<Functor, Arg>(arg);
+      ^
+/path/to/quda/lib/coarse_op.cuh:580:7: note: in instantiation of function template specialization 'quda::CalculateY<false, QUDA_CPU_FIELD_LOCATION, quda::CalculateYArg<true, float, float, 2, 2, 32, 32, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER, true, int>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 4, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>>>::Launch<QUDA_CPU_FIELD_LOCATION>' requested here
+      Launch<location_template>(arg, tp, type, stream);
+      ^
+/path/to/quda/lib/coarse_op.cuh:1073:11: note: in instantiation of member function 'quda::CalculateY<false, QUDA_CPU_FIELD_LOCATION, quda::CalculateYArg<true, float, float, 2, 2, 32, 32, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER, true, int>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 4, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>>>::apply' requested here
+        y.apply(device::get_default_stream());
+          ^
+/path/to/quda/lib/coarsecoarse_op.hpp:61:7: note: in instantiation of function template specialization 'quda::calculateY<false, QUDA_CPU_FIELD_LOCATION, true, float, float, 2, 32, 2, 32, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 4, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::colorspinor::FieldOrderCB<float, 2, 32, 32, QUDA_SPACE_SPIN_COLOR_FIELD_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER, true, int>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>, quda::gauge::FieldOrder<float, 64, 2, QUDA_QDP_GAUGE_ORDER>>' requested here
+      calculateY<use_mma, QUDA_CPU_FIELD_LOCATION, true, Float, vFloat, fineSpin, fineColor, coarseSpin, coarseColor>(
+      ^
+/path/to/quda/lib/coarsecoarse_op.hpp:194:13: note: in instantiation of function template specialization 'quda::calculateYcoarse<false, float, float, 32, 32>' requested here
+            calculateYcoarse<use_mma, float, float, fineColor, coarseColor>(Y, X, Yatomic, Xatomic, uv, T, g, clover,
+            ^
+/path/to/quda/build/lib/coarsecoarse_op_32_32.cu:45:5: note: in instantiation of function template specialization 'quda::calculateYcoarse<false, 32, 32>' requested here
+    calculateYcoarse<use_mma, fineColor, coarseColor>(Y, X, *Yatomic, *Xatomic, *uv, T, gauge, clover, cloverInv, kappa, mass, mu, mu_factor, dirac, matpc,
+    ^
+/path/to/quda/include/targets/hip/shared_memory_helper.h:84:15: note: candidate constructor template not viable: requires 1 argument, but 2 were provided
+    constexpr SharedMemory(const KernelOps<U...> &) : data(cache(get_offset(target::block_dim())))
+              ^
+/path/to/quda/include/targets/hip/shared_memory_helper.h:23:62: note: candidate constructor (the implicit copy constructor) not viable: requires 1 argument, but 2 were provided
+  template <typename T, typename S, typename O = void> class SharedMemory
+                                                             ^
+/path/to/quda/include/targets/hip/shared_memory_helper.h:23:62: note: candidate constructor (the implicit move constructor) not viable: requires 1 argument, but 2 were provided
+/path/to/quda/include/targets/hip/shared_memory_helper.h:78:15: note: candidate constructor not viable: requires 0 arguments, but 2 were provided
+    constexpr SharedMemory() : data(cache(get_offset(target::block_dim()))) { }
+              ^
+/path/to/quda/lib/interface_quda.cpp:4811:15: error: reference to 'array' is ambiguous
+  std::vector<array<double, 2>> ferm_epsilon(nvector);
+              ^
+/path/to/quda/lib/../include/array.h:12:39: note: candidate found by name lookup is 'quda::array'
+  template <typename T, int n> struct array {
+                                      ^
+/path/to/eigen3/include/eigen3/Eigen/src/Core/util/EmulateArray.h:18:7: note: candidate found by name lookup is 'Eigen::array'
+class array {
+      ^
+/path/to/quda/lib/inv_cg_quda.cpp:894:7: error: use of undeclared identifier 'rp'
+      rp = ColorSpinorField::Create(csParam);
+      ^
+/path/to/quda/lib/inv_cg_quda.cpp:895:7: error: use of undeclared identifier 'yp'
+      yp = ColorSpinorField::Create(csParam);
+      ^
+/path/to/quda/lib/inv_cg_quda.cpp:899:7: error: use of undeclared identifier 'pp'
+      pp = ColorSpinorField::Create(csParam);
+      ^
+/path/to/quda/lib/inv_cg_quda.cpp:900:7: error: use of undeclared identifier 'App'; did you mean 'Ap'?
+      App = ColorSpinorField::Create(csParam);
+      ^~~
+      Ap
+/path/to/quda/lib/../include/invert_quda.h:722:35: note: 'Ap' declared here
+    std::vector<ColorSpinorField> Ap;
+                                  ^
+/path/to/quda/lib/inv_cg_quda.cpp:900:11: error: no viable overloaded '='
+      App = ColorSpinorField::Create(csParam);
+      ~~~ ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/public/home/sghpc_sdk/Linux_x86_64/25.8/compilers/gcc-12.4.0/include/c++/12.4.0/bits/stl_vector.h:748:7: note: candidate function not viable: no known conversion from 'ColorSpinorField *' to 'const vector<ColorSpinorField>' for 1st argument
+      operator=(const vector& __x);
+      ^
+/public/home/sghpc_sdk/Linux_x86_64/25.8/compilers/gcc-12.4.0/include/c++/12.4.0/bits/stl_vector.h:763:7: note: candidate function not viable: no known conversion from 'ColorSpinorField *' to 'vector<ColorSpinorField>' for 1st argument
+      operator=(vector&& __x) noexcept(_Alloc_traits::_S_nothrow_move())
+      ^
+/public/home/sghpc_sdk/Linux_x86_64/25.8/compilers/gcc-12.4.0/include/c++/12.4.0/bits/stl_vector.h:785:7: note: candidate function not viable: no known conversion from 'ColorSpinorField *' to 'initializer_list<value_type>' (aka 'initializer_list<quda::ColorSpinorField>') for 1st argument
+      operator=(initializer_list<value_type> __l)
+      ^
+/path/to/quda/lib/inv_cg_quda.cpp:902:9: error: use of undeclared identifier 'rSloppyp'
+        rSloppyp = ColorSpinorField::Create(csParam);
+        ^
+/path/to/quda/lib/inv_cg_quda.cpp:903:9: error: use of undeclared identifier 'xSloppyp'
+        xSloppyp = ColorSpinorField::Create(csParam);
+        ^
+/path/to/quda/lib/inv_cg_quda.cpp:905:9: error: use of undeclared identifier 'rSloppyp'
+        rSloppyp = rp;
+        ^
+/path/to/quda/lib/inv_cg_quda.cpp:905:20: error: use of undeclared identifier 'rp'
+        rSloppyp = rp;
+                   ^
+/path/to/quda/lib/inv_cg_quda.cpp:910:7: error: use of undeclared identifier 'tmpp'
+      tmpp = ColorSpinorField::Create(csParam);
+      ^
+/path/to/quda/lib/inv_cg_quda.cpp:915:10: error: use of undeclared identifier 'rnewp'
+    if (!rnewp) {
+         ^
+/path/to/quda/lib/inv_cg_quda.cpp:921:28: error: use of undeclared identifier 'rp'
+    ColorSpinorField &r = *rp;
+                           ^
+/path/to/quda/lib/inv_cg_quda.cpp:922:28: error: use of undeclared identifier 'yp'
+    ColorSpinorField &y = *yp;
+                           ^
+/path/to/quda/lib/inv_cg_quda.cpp:923:28: error: use of undeclared identifier 'pp'
+    ColorSpinorField &p = *pp;
+                           ^
+/path/to/quda/lib/inv_cg_quda.cpp:924:29: error: use of undeclared identifier 'App'
+    ColorSpinorField &Ap = *App;
+                            ^
+/path/to/quda/lib/inv_cg_quda.cpp:925:31: error: use of undeclared identifier 'rnewp'
+    ColorSpinorField &rnew = *rnewp;
+                              ^
+/path/to/quda/lib/inv_cg_quda.cpp:926:34: error: use of undeclared identifier 'rSloppyp'
+    ColorSpinorField &rSloppy = *rSloppyp;
+                                 ^
+/path/to/quda/lib/inv_cg_quda.cpp:927:73: error: use of undeclared identifier 'xSloppyp'
+    ColorSpinorField &xSloppy = param.use_sloppy_partial_accumulator ? *xSloppyp : x;
+                                                                        ^
+/path/to/quda/lib/inv_cg_quda.cpp:1028:17: error: reference to type 'cvector<Complex>' (aka 'const vector<std::complex<double>>') could not bind to an lvalue of type 'quda::Complex *' (aka 'complex<double> *')
+    blas::caxpy(AC, r, p);
+                ^~
+/path/to/quda/lib/../include/blas_quda.h:185:34: note: passing argument to parameter 'a' here
+    void caxpy(cvector<Complex> &a, cvector_ref<const ColorSpinorField> &x, cvector_ref<ColorSpinorField> &y);
+                                 ^

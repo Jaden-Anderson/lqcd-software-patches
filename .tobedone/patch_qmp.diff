@@ -1,0 +1,17 @@
+diff --git a/bin/qmp-config.cmake.in b/bin/qmp-config.cmake.in
+index 7376cc9..9343bb9 100644
+--- a/bin/qmp-config.cmake.in
++++ b/bin/qmp-config.cmake.in
+@@ -19,9 +19,9 @@ version="@PROJECT_VERSION@"
+ qmp_comms_type="@QMP_COMMS_TYPE@"
+ qmp_cc="@CMAKE_C_COMPILER@"
+ qmp_copts="@CMAKE_C_FLAGS@"
+-qmp_cflags="-I@CMAKE_INSTALL_PREFIX@/include @QMP_COMMS_CFLAGS@ @CMAKE_C_COMPILER_FLAGS@"
+-qmp_ldflags="-L@CMAKE_INSTALL_PREFIX@/lib @QMP_COMMS_LDFLAGS@"
+-qmp_libs="-lqmp @QMP_COMMS_LIBS@"
++qmp_cflags="-I@CMAKE_INSTALL_PREFIX@/include @QMP_COMMS_CFLAGS@ @CMAKE_C_COMPILER_FLAGS@ @MPI_C_COMPILE_FLAGS@"
++qmp_ldflags="-L@CMAKE_INSTALL_PREFIX@/lib @QMP_COMMS_LDFLAGS@ @MPI_C_LINK_FLAGS@"
++qmp_libs="-lqmp @QMP_COMMS_LIBS@ @MPI_C_LIBRARIES@"
+ qmp_ranlib="@CMAKE_C_COMPILER_RANLIB@"
+ qmp_ar="@CMAKE_C_COMPILER_AR@"
+ 

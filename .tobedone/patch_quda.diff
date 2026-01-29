@@ -1,0 +1,143 @@
+diff --git a/include/targets/hip/shared_memory_helper.h b/include/targets/hip/shared_memory_helper.h
+index 69d8c095c..3b4b46a13 100644
+--- a/include/targets/hip/shared_memory_helper.h
++++ b/include/targets/hip/shared_memory_helper.h
+@@ -80,8 +80,9 @@ namespace quda
+     /**
+        @brief Constructor for SharedMemory object.
+     */
+-    template <typename... U>
+-    constexpr SharedMemory(const KernelOps<U...> &) : data(cache(get_offset(target::block_dim())))
++    template <typename... U, typename... Arg>
++    constexpr SharedMemory(const KernelOps<U...> &, const Arg &...arg) :
++      data(cache(get_offset(target::block_dim(), arg...)))
+     {
+     }
+
+diff --git a/lib/interface_quda.cpp b/lib/interface_quda.cpp
+index 77fec65bf..0e78fd3b2 100644
+--- a/lib/interface_quda.cpp
++++ b/lib/interface_quda.cpp
+@@ -4808,7 +4808,7 @@ void computeCloverForceQuda(void *h_mom, double dt, void **h_x, void **, double
+
+   std::vector<ColorSpinorField> x(nvector), x0(nvector);
+   std::vector<double> force_coeff(nvector);
+-  std::vector<array<double, 2>> ferm_epsilon(nvector);
++  std::vector<quda::array<double, 2>> ferm_epsilon(nvector);
+
+   QudaParity parity = inv_param->matpc_type == QUDA_MATPC_EVEN_EVEN_ASYMMETRIC ? QUDA_EVEN_PARITY : QUDA_ODD_PARITY;
+
+@@ -4883,7 +4883,7 @@ void computeTMCloverForceQuda(void *h_mom, void **h_x, void **h_x0, double *coef
+
+   std::vector<ColorSpinorField> x(nvector), x0(nvector);
+   std::vector<double> force_coeff(nvector);
+-  std::vector<array<double, 2>> ferm_epsilon(nvector);
++  std::vector<quda::array<double, 2>> ferm_epsilon(nvector);
+
+   QudaParity parity = inv_param->matpc_type == QUDA_MATPC_EVEN_EVEN_ASYMMETRIC ? QUDA_EVEN_PARITY : QUDA_ODD_PARITY;
+
+diff --git a/include/invert_quda.h b/include/invert_quda.h
+index a650766ec..b69f4c62f 100644
+--- a/include/invert_quda.h
++++ b/include/invert_quda.h
+@@ -723,6 +723,16 @@ namespace quda {
+     std::vector<ColorSpinorField> r_sloppy;
+     std::vector<ColorSpinorField> x_sloppy;
+     bool init = false;
++#ifdef BLOCKSOLVER
++    ColorSpinorField* yp = nullptr;
++    ColorSpinorField* rp = nullptr;
++    ColorSpinorField* rnewp = nullptr;
++    ColorSpinorField* pp = nullptr;
++    ColorSpinorField* App = nullptr;
++    ColorSpinorField* rSloppyp = nullptr;
++    ColorSpinorField* xSloppyp = nullptr;
++    ColorSpinorField* tmpp = nullptr;
++#endif
+ 
+     /**
+        @brief Initiate the fields needed by the solver
+diff --git a/lib/inv_cg_quda.cpp b/lib/inv_cg_quda.cpp
+index 43df31e1b..0439d72e7 100644
+--- a/lib/inv_cg_quda.cpp
++++ b/lib/inv_cg_quda.cpp
+@@ -25,7 +25,31 @@ namespace quda {
+   {
+   }
+ 
++#ifndef BLOCKSOLVER
+   CG::~CG() { destroyDeflationSpace(); }
++#else
++  CG::~CG() {
++    if (rSloppyp != rp) {
++      delete rSloppyp;
++    }
++    delete yp;
++    delete rp;
++    delete rnewp;
++    delete pp;
++    delete App;
++    delete xSloppyp;
++    delete tmpp;
++    yp = nullptr;
++    rp = nullptr;
++    rnewp = nullptr;
++    pp = nullptr;
++    App = nullptr;
++    rSloppyp = nullptr;
++    xSloppyp = nullptr;
++    tmpp = nullptr;
++    destroyDeflationSpace();
++  }
++#endif
+ 
+   void CG::create(cvector_ref<ColorSpinorField> &x, cvector_ref<const ColorSpinorField> &b)
+   {
+@@ -972,7 +996,7 @@ namespace quda {
+     MatrixXcd C = MatrixXcd::Zero(param.num_src, param.num_src);
+     MatrixXcd S = MatrixXcd::Identity(param.num_src, param.num_src);
+     MatrixXcd pAp = MatrixXcd::Identity(param.num_src, param.num_src);
+-    quda::Complex *AC = new quda::Complex[param.num_src * param.num_src];
++    std::vector<quda::Complex> AC(param.num_src * param.num_src, 0.0);
+ 
+ #ifdef MWVERBOSE
+     MatrixXcd pTp = MatrixXcd::Identity(param.num_src, param.num_src);
+@@ -1135,7 +1159,7 @@ namespace quda {
+       // check convergence
+       allconverged = true;
+       for (int i = 0; i < param.num_src; i++) {
+-        converged[i] = convergence(r2(i, i).real(), 0, stop[i], param.tol_hq);
++        converged[i] = convergence(r2(i, i).real(), cvector<double>{0.0}, stop[i], param.tol_hq);
+         allconverged = allconverged && converged[i];
+       }
+     }
+@@ -1156,8 +1180,8 @@ namespace quda {
+       mat(r.Component(i), x.Component(i));
+       param.true_res = sqrt(blas::xmyNorm(b.Component(i), r.Component(i)) / b2[i]);
+       param.true_res_hq = sqrt(blas::HeavyQuarkResidualNorm(x.Component(i), r.Component(i)).z);
+-      param.true_res_offset[i] = param.true_res;
+-      param.true_res_hq_offset[i] = param.true_res_hq;
++      param.true_res_offset[i] = param.true_res[0];
++      param.true_res_hq_offset[i] = param.true_res_hq[0];
+ 
+       PrintSummary("CG", k, r2(i, i).real(), b2[i], stop[i]);
+     }
+@@ -1165,7 +1189,6 @@ namespace quda {
+     getProfile().TPSTOP(QUDA_PROFILE_EPILOGUE);
+     getProfile().TPSTART(QUDA_PROFILE_FREE);
+ 
+-    delete[] AC;
+     getProfile().TPSTOP(QUDA_PROFILE_FREE);
+ 
+     return;
+@@ -1714,8 +1737,8 @@ void CG::solve(ColorSpinorField& x, ColorSpinorField& b) {
+     mat(r.Component(i), x.Component(i));
+     param.true_res = sqrt(blas::xmyNorm(b.Component(i), r.Component(i)) / b2[i]);
+     param.true_res_hq = sqrt(blas::HeavyQuarkResidualNorm(x.Component(i), r.Component(i)).z);
+-    param.true_res_offset[i] = param.true_res;
+-    param.true_res_hq_offset[i] = param.true_res_hq;
++    param.true_res_offset[i] = param.true_res[0];
++    param.true_res_hq_offset[i] = param.true_res_hq[0];
+ 
+     PrintSummary("CG", k, r2(i, i).real(), b2[i], stop[i]);
+   }

@@ -1,0 +1,24 @@
+#!/bin/bash
+QIO_HOME=/path/where/you/would/install/QIO
+LIME_HOME=/path/where/you/have/installed/c-lime
+cmake .. \
+  -DCMAKE_INSTALL_PREFIX=$QIO_HOME \
+  -DCLime_DIR=$LIME_HOME \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DQIO_ENABLE_PARALLEL_BUILD=ON \
+  -DQIO_ENABLE_PARALLEL_IO=ON \
+  -DQIO_ENABLE_QMP_ROUTE=ON \
+  -DQIO_ENABLE_OUTPUT_BUFFERING=ON \
+  -DQIO_BUILD_TESTS=ON \
+  -DQIO_ENABLE_SANITIZERS=OFF \
+  -DCMAKE_C_COMPILER=$(which gcc) \
+  -DCMAKE_C_FLAGS="-O3 -fPIC"
+make -j$(nproc)
+make install
+if [ "X${CMAKE_PREFIX_PATH}X" = "XX" ]
+then
+  CMAKE_PREFIX=$QIO_HOME
+else
+  CMAKE_PREFIX=${QIO_HOME}:${CMAKE_PREFIX_PATH}
+fi
+export CMAKE_PREFIX_PATH=$CMAKE_PREFIX
