@@ -6,6 +6,8 @@ main() {
   then
     git clone https://github.com/PX4/eigen.git $2
     if [ $? -ne 0 ]; then return $?; fi
+  else
+    git -C $2 pull || return $?
   fi
   if [ -f $1/patch.diff ]
   then
