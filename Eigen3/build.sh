@@ -3,13 +3,13 @@ EIGEN_HOME=/path/where/you/would/install/eigen3
 # Modify the lines above first!
 main() {
   local home=$(realpath $2)
-  local select is_install=yes
+  local option is_install=yes
   if [ "X${3:0-4}X" = "X.gitX" ]
   then
     echo "WARNING: 'EIGEN_HOME' is in the repository '$3', which is not recommended."
-    read -p "Are you sure to install Eigen3 in '$home' (N/y)?" select
-    case "${select,,}" in
-      y|yes) unset select;;
+    read -p "Are you sure to install Eigen3 in '$home' (N/y)?" option
+    case "${option,,}" in
+      y|yes) unset option;;
       *) unset is_install;;
     esac
   fi
