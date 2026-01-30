@@ -19,7 +19,7 @@ main() {
     echo "ERROR: Cannot find file '$1/CMakeLists.txt'."
     return 1
   fi
-  cmake -B $1/build -C $1 \
+  cmake -B $1/build -S $1 \
     -DCMAKE_INSTALL_PREFIX=$home \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_VERBOSE_MAKEFILE=OFF \
