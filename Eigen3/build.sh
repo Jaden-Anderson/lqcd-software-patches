@@ -34,7 +34,7 @@ main() {
     -DEIGEN_BUILD_AOCL_BENCH=OFF \
     -DCMAKE_C_COMPILER=$(which gcc) \
     -DCMAKE_CXX_COMPILER=$(which g++)
-  make install || return $?
+  make -C $1/build install || return $?
   local prefix
   if [ "X${CMAKE_PREFIX_PATH}X" = "XX" ]
   then
