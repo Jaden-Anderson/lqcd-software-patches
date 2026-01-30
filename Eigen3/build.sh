@@ -80,7 +80,7 @@ then
   return 1
 else
   BASH_CWD=$(dirname $(realpath $CURRENT))
-  REPO_ROOT=$(paste -z $BASH_CWD/.gitkeepcache)
+  REPO_ROOT=$(cat $BASH_CWD/.gitkeepcache)
   if [ "X${REPO_ROOT}X" = "XX" ]
   then
     echo "ERROR: Run 'setup.sh' first!"
