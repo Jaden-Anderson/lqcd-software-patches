@@ -1,5 +1,5 @@
 #!/bin/bash
-QMP_HOME=/path/where/you/would/install/QMP
+QMP_HOME=/path/where/you/would/install/qmp
 cmake .. \
   -DCMAKE_INSTALL_PREFIX=$QMP_HOME \
   -DCMAKE_BUILD_TYPE=Release \
@@ -13,7 +13,10 @@ cmake .. \
   -DQMP_USE_DMALLOC=OFF \
   -DQMP_BGQ=OFF \
   -DQMP_BGSPI=OFF \
+  -DCMAKE_C_COMPILER=$(which gcc) \
+  -DCMAKE_CXX_COMPILER=$(which g++) \
   -DMPI_C_COMPILER=$(which mpicc) \
+  -DMPI_CXX_COMPILER=$(which mpicxx) \
   -DCMAKE_C_FLAGS="-O3 -fPIC"
 make -j$(nproc)
 make install
@@ -23,4 +26,3 @@ then
 else
   CMAKE_PREFIX=${QMP_HOME}:${CMAKE_PREFIX_PATH}
 fi
-export CMAKE_PREFIX_PATH=$CMAKE_PREFIX
