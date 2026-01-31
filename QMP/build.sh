@@ -1,13 +1,13 @@
 #!/bin/bash
-EIGEN_HOME=/path/where/you/would/install/eigen3
+QMP_HOME=/path/where/you/would/install/qmp
 # Modify the lines above first!
 main() {
   local home=$(realpath $2)
   local option is_install=yes
   if [ "X${3:0-4}X" = "X.gitX" ]
   then
-    echo "WARNING: 'EIGEN_HOME' is in the repository '$3', which is not recommended."
-    read -p "Are you sure to install Eigen3 in '$home' ([no]/yes)? " option
+    echo "WARNING: 'QMP_HOME' is in the repository '$3', which is not recommended."
+    read -p "Are you sure to install QMP in '$home' ([no]/yes)? " option
     case "${option,,}" in
       y|yes) unset option;;
       *) unset is_install;;
@@ -20,21 +20,25 @@ main() {
     return 1
   fi
   cmake -B $1/build -S $1 \
-    -DCMAKE_INSTALL_PREFIX=$home \
+    -DCMAKE_INSTALL_PREFIX=$QMP_HOME \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_VERBOSE_MAKEFILE=OFF \
-    -DEIGEN_BUILD_DEMOS=OFF \
-    -DEIGEN_BUILD_DOC=OFF \
-    -DEIGEN_BUILD_TESTING=OFF \
-    -DEIGEN_BUILD_PKGCONFIG=ON \
-    -DEIGEN_BUILD_BTL=OFF \
-    -DEIGEN_BUILD_BLAS=OFF \
-    -DEIGEN_BUILD_LAPACK=OFF \
-    -DEIGEN_BUILD_SPBENCH=OFF \
-    -DEIGEN_BUILD_AOCL_BENCH=OFF \
+    -DQMP_BUILD_DOCS=OFF \
+    -DQMP_MPI=ON \
+    -DQMP_BGQ=OFF \
+    -DQMP_BGSPI=OFF \
+    -DQMP_TIMING=OFF \
+    -DQMP_PROFILING=OFF \
+    -DQMP_TESTING=ON \
+    -DQMP_EXTRA_DEBUG=OFF \
+    -DQMP_USE_DMALLOC=OFF \
+    -DQMP_ENABLE_SANITIZERS=OFF \
     -DCMAKE_C_COMPILER=$(which gcc) \
-    -DCMAKE_CXX_COMPILER=$(which g++)
+    -DCMAKE_CXX_COMPILER=$(which g++) \
+    -DMPI_C_COMPILER=$(which mpicc) \
+    -DMPI_CXX_COMPILER=$(which mpicxx) \
+    -DCMAKE_C_FLAGS="-O3 -fPIC"
   if [ $? -ne 0 ]; then return $?; fi
+  make -C $1/build -j$(nproc) || return $?
   make -C $1/build install || return $?
   local prefix
   if [ "X${CMAKE_PREFIX_PATH}X" = "XX" ]
@@ -44,28 +48,23 @@ main() {
     prefix=${home}:${CMAKE_PREFIX_PATH}
   fi
   export CMAKE_PREFIX_PATH=$prefix
-  local lib="$home/lib/cmake"
-  local src="share/eigen3/cmake"
-  mkdir -p $lib && cd $lib || return $?
-  ln -s ../../$src eigen3
-  cd - > /dev/null
   return 0;
 }
 
 build() {
   if [ $# -gt 2 ]
   then
-    echo "ERROR: 'EIGEN_HOME' should not contain spaces '${@:2}'"
+    echo "ERROR: 'QMP_HOME' should not contain spaces '${@:2}'"
     return 1
   fi
   if [ "X$2X" = "XX" ]
   then
-    echo "ERROR: Missing environment variable; 'EIGEN_HOME' should not be set empty!"
+    echo "ERROR: Missing environment variable; 'QMP_HOME' should not be set empty!"
     return 1
   fi
-  if [ $2 = "/path/where/you/would/install/eigen3" ]
+  if [ $2 = "/path/where/you/would/install/qmp" ]
   then
-    echo "EIGEN_HOME=/path/where/you/would/install/eigen3"
+    echo "QMP_HOME=/path/where/you/would/install/qmp"
     echo "# Modify the above lines first!"
     return 1
   fi
@@ -94,6 +93,6 @@ else
   fi
   echo -n > $BASH_CWD/.gitkeepcache
   mkdir -p $REPO_ROOT/build || return $?
-  build $REPO_ROOT $EIGEN_HOME
+  build $REPO_ROOT $QMP_HOME
   return $?
 fi

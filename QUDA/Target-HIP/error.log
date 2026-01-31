@@ -1,3 +1,8 @@
+CMake Error at cmake/CPM.cmake:19 (file):
+  file DOWNLOAD cannot compute hash on failed download
+    status: [56;"Failure when receiving data from the peer"]
+Call Stack (most recent call first):
+  CMakeLists.txt:35 (include)
 In file included from /path/to/quda/build/lib/coarsecoarse_op_32_32.cu:1:
 In file included from /path/to/quda/lib/coarsecoarse_op.hpp:9:
 In file included from /path/to/quda/lib/coarse_op.cuh:3:
