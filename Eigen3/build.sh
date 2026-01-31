@@ -57,6 +57,11 @@ build() {
     echo "ERROR: 'EIGEN_HOME' should not contain spaces '${@:2}'"
     return 1
   fi
+  if [ "X$2X" = "XX" ]
+  then
+    echo "ERROR: Missing environment variable; 'EIGEN_HOME' should not be set empty!"
+    return 1
+  fi
   if [ $2 = "/path/where/you/would/install/eigen3" ]
   then
     echo "EIGEN_HOME=/path/where/you/would/install/eigen3"
