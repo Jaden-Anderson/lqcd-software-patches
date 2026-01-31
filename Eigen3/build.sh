@@ -7,7 +7,7 @@ main() {
   if [ "X${3:0-4}X" = "X.gitX" ]
   then
     echo "WARNING: 'EIGEN_HOME' is in the repository '$3', which is not recommended."
-    read -p "Are you sure to install Eigen3 in '$home' (N/y)?" option
+    read -p "Are you sure to install Eigen3 in '$home' ([no]/yes)? " option
     case "${option,,}" in
       y|yes) unset option;;
       *) unset is_install;;
