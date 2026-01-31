@@ -26,6 +26,11 @@ setup() {
     echo "ERROR: 'REPO_ROOT' should not contain spaces '${@:2}'"
     return 1
   fi
+  if [ "X$2X" = "XX" ]
+  then
+    echo "ERROR: Missing environment variable; 'REPO_ROOT' should not be set empty!"
+    return 1
+  fi
   if [ $2 = "/path/to/an-empty-directory/where/you/would/store/the-source-code" ]
   then
     echo "REPO_ROOT=/path/to/an-empty-directory/where/you/would/store/the-source-code"
