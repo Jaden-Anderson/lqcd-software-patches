@@ -2,9 +2,9 @@
 REPO_ROOT=/path/to/an-empty-directory/where/you/would/store/the-source-code
 # Modify the above lines first!
 main() {
-  if [ $3 != "qmp.git" ]
+  if [ $3 != "c-lime.git" ]
   then
-    https://github.com/usqcd-software/qmp.git $2
+    https://github.com/usqcd-software/c-lime.git $2
     if [ $? -ne 0 ]; then return $?; fi
   else
     git -C $2 pull || return $?

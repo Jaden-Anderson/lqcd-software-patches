@@ -1,13 +1,13 @@
 #!/bin/bash
-QMP_HOME=/path/where/you/would/install/qmp
+LIME_HOME=/path/where/you/would/install/c-lime
 # Modify the lines above first!
 main() {
   local home=$(realpath $2)
   local option is_install=yes
   if [ "X${3:0-4}X" = "X.gitX" ]
   then
-    echo "WARNING: 'QMP_HOME' is in the repository '$3', which is not recommended."
-    read -p "Are you sure to install QMP in '$home' ([no]/yes)? " option
+    echo "WARNING: 'LIME_HOME' is in the repository '$3', which is not recommended."
+    read -p "Are you sure to install LIME in '$home' ([no]/yes)? " option
     case "${option,,}" in
       y|yes) unset option;;
       *) unset is_install;;
@@ -21,21 +21,7 @@ main() {
   fi
   cmake -B $1/build -S $1 \
     -DCMAKE_INSTALL_PREFIX=$home \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DQMP_BUILD_DOCS=OFF \
-    -DQMP_MPI=ON \
-    -DQMP_BGQ=OFF \
-    -DQMP_BGSPI=OFF \
-    -DQMP_TIMING=OFF \
-    -DQMP_PROFILING=OFF \
-    -DQMP_TESTING=ON \
-    -DQMP_EXTRA_DEBUG=OFF \
-    -DQMP_USE_DMALLOC=OFF \
-    -DQMP_ENABLE_SANITIZERS=OFF \
     -DCMAKE_C_COMPILER=$(which gcc) \
-    -DCMAKE_CXX_COMPILER=$(which g++) \
-    -DMPI_C_COMPILER=$(which mpicc) \
-    -DMPI_CXX_COMPILER=$(which mpicxx) \
     -DCMAKE_C_FLAGS="-O3 -fPIC"
   if [ $? -ne 0 ]; then return $?; fi
   make -C $1/build -j$(nproc) || return $?
@@ -48,23 +34,30 @@ main() {
     prefix=${home}:${CMAKE_PREFIX_PATH}
   fi
   export CMAKE_PREFIX_PATH=$prefix
+  mkdir -p $HOME/.local/bin 2> /dev/null
+  if [ $? -eq 0 ]
+  then
+    local src=$home/bin
+    local dest=$HOME/.local/bin
+    ln -s $src/lime* $dest/ 2> /dev/null
+  fi
   return 0;
 }
 
 build() {
   if [ $# -gt 2 ]
   then
-    echo "ERROR: 'QMP_HOME' should not contain spaces '${@:2}'"
+    echo "ERROR: 'LIME_HOME' should not contain spaces '${@:2}'"
     return 1
   fi
   if [ "X$2X" = "XX" ]
   then
-    echo "ERROR: Missing environment variable; 'QMP_HOME' should not be set empty!"
+    echo "ERROR: Missing environment variable; 'LIME_HOME' should not be set empty!"
     return 1
   fi
-  if [ $2 = "/path/where/you/would/install/qmp" ]
+  if [ $2 = "/path/where/you/would/install/c-lime" ]
   then
-    echo "QMP_HOME=/path/where/you/would/install/qmp"
+    echo "LIME_HOME=/path/where/you/would/install/c-lime"
     echo "# Modify the above lines first!"
     return 1
   fi
@@ -93,6 +86,6 @@ else
   fi
   echo -n > $BASH_CWD/.gitkeepcache
   mkdir -p $REPO_ROOT/build || return $?
-  build $REPO_ROOT $QMP_HOME
+  build $REPO_ROOT $LIME_HOME
   return $?
 fi

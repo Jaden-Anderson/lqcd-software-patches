@@ -1,5 +1,0 @@
-CMake Error at cmake/CPM.cmake:19 (file):
-  file DOWNLOAD cannot compute hash on failed download
-    status: [56;"Failure when receiving data from the peer"]
-Call Stack (most recent call first):
-  CMakeLists.txt:35 (include)
