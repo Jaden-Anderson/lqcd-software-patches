@@ -39,7 +39,7 @@ setup() {
   fi
   mkdir -p $2 && cd $2 || return $?
   local repo_name=$(git remote get-url origin 2> /dev/null)
-  cd - > /dev/null
+  cd - 1> /dev/null
   main $1 $(realpath $2) $(basename .xxx/$repo_name)
   return $?;
 }

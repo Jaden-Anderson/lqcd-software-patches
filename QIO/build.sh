@@ -1,13 +1,15 @@
 #!/bin/bash
-QMP_HOME=/path/where/you/would/install/qmp
+QIO_HOME=/path/where/you/would/install/qio
+LIME_HOME=/path/where/you/have/installed/c-lime
 # Modify the lines above first!
 main() {
   local home=$(realpath $2)
+  local lime=$(realpath $3)
   local option is_install=yes
-  if [ "X${3:0-4}X" = "X.gitX" ]
+  if [ "X${4:0-4}X" = "X.gitX" ]
   then
-    echo "WARNING: 'QMP_HOME' is in the repository '$3', which is not recommended."
-    read -p "Are you sure to install QMP in '$home' ([no]/yes)? " option
+    echo "WARNING: 'QIO_HOME' is in the repository '$4', which is not recommended."
+    read -p "Are you sure to install QIO in '$home' ([no]/yes)? " option
     case "${option,,}" in
       y|yes) unset option;;
       *) unset is_install;;
@@ -21,21 +23,15 @@ main() {
   fi
   cmake -B $1/build -S $1 \
   -DCMAKE_INSTALL_PREFIX=$home \
+  -DCLime_DIR=$lime \
   -DCMAKE_BUILD_TYPE=Release \
-  -DQMP_BUILD_DOCS=OFF \
-  -DQMP_MPI=ON \
-  -DQMP_BGQ=OFF \
-  -DQMP_BGSPI=OFF \
-  -DQMP_TIMING=OFF \
-  -DQMP_PROFILING=OFF \
-  -DQMP_TESTING=ON \
-  -DQMP_EXTRA_DEBUG=OFF \
-  -DQMP_USE_DMALLOC=OFF \
-  -DQMP_ENABLE_SANITIZERS=OFF \
+  -DQIO_ENABLE_PARALLEL_BUILD=ON \
+  -DQIO_ENABLE_PARALLEL_IO=ON \
+  -DQIO_ENABLE_QMP_ROUTE=ON \
+  -DQIO_ENABLE_OUTPUT_BUFFERING=ON \
+  -DQIO_BUILD_TESTS=ON \
+  -DQIO_ENABLE_SANITIZERS=OFF \
   -DCMAKE_C_COMPILER=$(which gcc) \
-  -DCMAKE_CXX_COMPILER=$(which g++) \
-  -DMPI_C_COMPILER=$(which mpicc) \
-  -DMPI_CXX_COMPILER=$(which mpicxx) \
   -DCMAKE_C_FLAGS="-O3 -fPIC"
   if [ $? -ne 0 ]; then return $?; fi
   make -C $1/build -j$(nproc) || return $?
@@ -52,27 +48,52 @@ main() {
 }
 
 build() {
+  if [ $# -gt 3 ]
+  then
+    echo "ERROR: 'LIME_HOME' should not contain spaces '${@:3}'"
+    return 1
+  fi
+  if [ "X$3X" = "XX" ]
+  then
+    echo "ERROR: Missing environment variable; 'LIME_HOME' should not be set empty!"
+    return 1
+  fi
+  local code=0
+  if [ $2 = "/path/where/you/would/install/qio" ]
+  then
+    echo "QIO_HOME=/path/where/you/would/install/qio"
+    code=$(expr $code + 1)
+  fi
+  if [ $3 = "/path/where/you/have/installed/c-lime" ]
+  then
+    echo "LIME_HOME=/path/where/you/have/installed/c-lime"
+    code=$(expr $code + 1)
+  fi
+  if [ $code -ne 0 ]
+  then
+    echo "# Modify the lines above first!"
+    return $code
+  fi
+  cd $3 && cd - 1> /dev/null || return $?
+  mkdir -p $2 && cd $2 || return $?
+  local repo_name=$(git remote get-url origin 2> /dev/null)
+  cd - 1> /dev/null
+  main $1 $2 $3 $(basename .xxx/$repo_name)
+  return $?;
+}
+
+check() {
   if [ $# -gt 2 ]
   then
-    echo "ERROR: 'QMP_HOME' should not contain spaces '${@:2}'"
+    echo "ERROR: 'QIO_HOME' should not contain spaces '${@:2}'"
     return 1
   fi
   if [ "X$2X" = "XX" ]
   then
-    echo "ERROR: Missing environment variable; 'QMP_HOME' should not be set empty!"
+    echo "ERROR: Missing environment variable; 'QIO_HOME' should not be set empty!"
     return 1
   fi
-  if [ $2 = "/path/where/you/would/install/qmp" ]
-  then
-    echo "QMP_HOME=/path/where/you/would/install/qmp"
-    echo "# Modify the above lines first!"
-    return 1
-  fi
-  mkdir -p $2 && cd $2 || return $?
-  local repo_name=$(git remote get-url origin 2> /dev/null)
-  cd - 1> /dev/null
-  main $1 $2 $(basename .xxx/$repo_name)
-  return $?;
+  return 0;
 }
 
 CURRENT=$0
@@ -93,6 +114,7 @@ else
   fi
   echo -n > $BASH_CWD/.gitkeepcache
   mkdir -p $REPO_ROOT/build || return $?
-  build $REPO_ROOT $QMP_HOME
+  check $REPO_ROOT $QIO_HOME || return $?
+  build $REPO_ROOT $QIO_HOME $LIME_HOME
   return $?
 fi

@@ -4,7 +4,7 @@ REPO_ROOT=/path/to/an-empty-directory/where/you/would/store/the-source-code
 main() {
   if [ $3 != "qmp.git" ]
   then
-    https://github.com/usqcd-software/qmp.git $2
+    git clone https://github.com/usqcd-software/qmp.git $2
     if [ $? -ne 0 ]; then return $?; fi
   else
     git -C $2 pull || return $?
@@ -39,7 +39,7 @@ setup() {
   fi
   mkdir -p $2 && cd $2 || return $?
   local repo_name=$(git remote get-url origin 2> /dev/null)
-  cd - > /dev/null
+  cd - 1> /dev/null
   main $1 $(realpath $2) $(basename .xxx/$repo_name)
   return $?;
 }

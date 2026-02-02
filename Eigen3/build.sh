@@ -20,20 +20,20 @@ main() {
     return 1
   fi
   cmake -B $1/build -S $1 \
-    -DCMAKE_INSTALL_PREFIX=$home \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_VERBOSE_MAKEFILE=OFF \
-    -DEIGEN_BUILD_DEMOS=OFF \
-    -DEIGEN_BUILD_DOC=OFF \
-    -DEIGEN_BUILD_TESTING=OFF \
-    -DEIGEN_BUILD_PKGCONFIG=ON \
-    -DEIGEN_BUILD_BTL=OFF \
-    -DEIGEN_BUILD_BLAS=OFF \
-    -DEIGEN_BUILD_LAPACK=OFF \
-    -DEIGEN_BUILD_SPBENCH=OFF \
-    -DEIGEN_BUILD_AOCL_BENCH=OFF \
-    -DCMAKE_C_COMPILER=$(which gcc) \
-    -DCMAKE_CXX_COMPILER=$(which g++)
+  -DCMAKE_INSTALL_PREFIX=$home \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCMAKE_VERBOSE_MAKEFILE=OFF \
+  -DEIGEN_BUILD_DEMOS=OFF \
+  -DEIGEN_BUILD_DOC=OFF \
+  -DEIGEN_BUILD_TESTING=OFF \
+  -DEIGEN_BUILD_PKGCONFIG=ON \
+  -DEIGEN_BUILD_BTL=OFF \
+  -DEIGEN_BUILD_BLAS=OFF \
+  -DEIGEN_BUILD_LAPACK=OFF \
+  -DEIGEN_BUILD_SPBENCH=OFF \
+  -DEIGEN_BUILD_AOCL_BENCH=OFF \
+  -DCMAKE_C_COMPILER=$(which gcc) \
+  -DCMAKE_CXX_COMPILER=$(which g++)
   if [ $? -ne 0 ]; then return $?; fi
   make -C $1/build install || return $?
   local prefix
@@ -48,7 +48,7 @@ main() {
   local src="share/eigen3/cmake"
   mkdir -p $lib && cd $lib || return $?
   ln -s ../../$src eigen3
-  cd - > /dev/null
+  cd - 1> /dev/null
   return 0;
 }
 
@@ -71,7 +71,7 @@ build() {
   fi
   mkdir -p $2 && cd $2 || return $?
   local repo_name=$(git remote get-url origin 2> /dev/null)
-  cd - > /dev/null
+  cd - 1> /dev/null
   main $1 $2 $(basename .xxx/$repo_name)
   return $?;
 }

@@ -20,9 +20,9 @@ main() {
     return 1
   fi
   cmake -B $1/build -S $1 \
-    -DCMAKE_INSTALL_PREFIX=$home \
-    -DCMAKE_C_COMPILER=$(which gcc) \
-    -DCMAKE_C_FLAGS="-O3 -fPIC"
+  -DCMAKE_INSTALL_PREFIX=$home \
+  -DCMAKE_C_COMPILER=$(which gcc) \
+  -DCMAKE_C_FLAGS="-O3 -fPIC"
   if [ $? -ne 0 ]; then return $?; fi
   make -C $1/build -j$(nproc) || return $?
   make -C $1/build install || return $?
@@ -63,7 +63,7 @@ build() {
   fi
   mkdir -p $2 && cd $2 || return $?
   local repo_name=$(git remote get-url origin 2> /dev/null)
-  cd - > /dev/null
+  cd - 1> /dev/null
   main $1 $2 $(basename .xxx/$repo_name)
   return $?;
 }
