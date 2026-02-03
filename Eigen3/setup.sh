@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 REPO_ROOT=/path/to/an-empty-directory/where/you/would/store/the-source-code
 # Modify the above lines first!
 main() {

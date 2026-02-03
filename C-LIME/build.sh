@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 LIME_HOME=/path/where/you/would/install/c-lime
 # Modify the lines above first!
 main() {

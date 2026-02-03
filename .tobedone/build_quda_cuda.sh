@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 QUDA_HOME=/path/where/you/would/install/quda
 MPI_HOME=/path/where/you/have/installed/mpi
 EIGEN_HOME=/path/where/you/have/installed/eigen3

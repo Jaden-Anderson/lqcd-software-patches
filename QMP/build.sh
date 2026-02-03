@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 QMP_HOME=/path/where/you/would/install/qmp
 # Modify the lines above first!
 main() {

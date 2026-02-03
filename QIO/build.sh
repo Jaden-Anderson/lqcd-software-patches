@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 QIO_HOME=/path/where/you/would/install/qio
 LIME_HOME=/path/where/you/have/installed/c-lime
 # Modify the lines above first!

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 EIGEN_HOME=/path/where/you/would/install/eigen3
 # Modify the lines above first!
 main() {
