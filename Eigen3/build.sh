@@ -1,99 +1,103 @@
-#!/usr/bin/env bash
+#!/bin/sh
 EIGEN_HOME=/path/where/you/would/install/eigen3
 # Modify the lines above first!
-main() {
-  local home=$(realpath $2)
-  local option is_install=yes
-  if [ "X${3:0-4}X" = "X.gitX" ]
+unset -f _main_ _check_
+
+_main_() {
+  if [ "X$1X" = 'XX' ]
   then
-    echo "WARNING: 'EIGEN_HOME' is in the repository '$3', which is not recommended."
-    read -p "Are you sure to install Eigen3 in '$home' ([no]/yes)? " option
-    case "${option,,}" in
-      y|yes) unset option;;
-      *) unset is_install;;
-    esac
-  fi
-  if [ ! $is_install ]; then return 0; fi
-  if [ ! -f $1/CMakeLists.txt ]
-  then
-    echo "ERROR: Cannot find file '$1/CMakeLists.txt'."
+    echo "ERROR: Missing environment variable; 'EIGEN_HOME' should not be set empty! "
     return 1
   fi
-  cmake -B $1/build -S $1 \
-  -DCMAKE_INSTALL_PREFIX=$home \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_VERBOSE_MAKEFILE=OFF \
-  -DEIGEN_BUILD_DEMOS=OFF \
-  -DEIGEN_BUILD_DOC=OFF \
-  -DEIGEN_BUILD_TESTING=OFF \
-  -DEIGEN_BUILD_PKGCONFIG=ON \
-  -DEIGEN_BUILD_BTL=OFF \
-  -DEIGEN_BUILD_BLAS=OFF \
-  -DEIGEN_BUILD_LAPACK=OFF \
-  -DEIGEN_BUILD_SPBENCH=OFF \
-  -DEIGEN_BUILD_AOCL_BENCH=OFF \
-  -DCMAKE_C_COMPILER=$(which gcc) \
-  -DCMAKE_CXX_COMPILER=$(which g++)
-  if [ $? -ne 0 ]; then return $?; fi
-  make -C $1/build install || return $?
-  local prefix
-  if [ "X${CMAKE_PREFIX_PATH}X" = "XX" ]
+  if [ "X$1X" = 'X/path/where/you/would/install/eigen3X' ]
   then
-    prefix=$home
-  else
-    prefix=${home}:${CMAKE_PREFIX_PATH}
+    echo 'EIGEN_HOME=/path/where/you/would/install/eigen3 '
+    echo '# Modify the above lines first! '
+    return 1
   fi
-  export CMAKE_PREFIX_PATH=$prefix
-  local lib="$home/lib/cmake"
-  local src="share/eigen3/cmake"
-  mkdir -p $lib && cd $lib || return $?
-  ln -s ../../$src eigen3
-  cd - 1> /dev/null
-  return 0;
+  echo "X$1X" | grep '[[:space:]]' 1>/dev/null
+  if [ $? -eq 0 ]
+  then
+    echo "ERROR: 'EIGEN_HOME' should not contain space characters '$1'. "
+    return 1
+  fi
+  { mkdir -p -- "$1" && cd -- "$1"; } || return
+  export _PREFIX_=$(pwd) || return
+  export REPO_NAME=$(git remote get-url origin 2>/dev/null)
+  cd - 1>/dev/null
+  return 0
 }
 
-build() {
-  if [ $# -gt 2 ]
-  then
-    echo "ERROR: 'EIGEN_HOME' should not contain spaces '${@:2}'"
-    return 1
-  fi
-  if [ "X$2X" = "XX" ]
-  then
-    echo "ERROR: Missing environment variable; 'EIGEN_HOME' should not be set empty!"
-    return 1
-  fi
-  if [ $2 = "/path/where/you/would/install/eigen3" ]
-  then
-    echo "EIGEN_HOME=/path/where/you/would/install/eigen3"
-    echo "# Modify the above lines first!"
-    return 1
-  fi
-  mkdir -p $2 && cd $2 || return $?
-  local repo_name=$(git remote get-url origin 2> /dev/null)
-  cd - 1> /dev/null
-  main $1 $2 $(basename .xxx/$repo_name)
-  return $?;
+_check_() {
+  if [ "X$1X" = 'XX' ]; then return 1; fi
+  cd -- "${1%/*}" 2>/dev/null || return
+  if [ ! -f build.sh ]; then return 1; fi
+  if [ ! -f .gitkeepcache ]; then return 1; fi
+  export CURRENT=$(pwd) || return
+  cd - 1>/dev/null
+  return 0
 }
 
-CURRENT=$0
-if [ "X${CURRENT:0:1}X" = "X-X" ]; then CURRENT=${BASH_SOURCE[0]}; fi
-if [ "X${CURRENT}X" = "XX" ]; then CURRENT=$(pwd); fi
-if [ ! -f $CURRENT/.gitkeepcache ]
+unset CURRENT REPO_HOME REPO_NAME _PREFIX_
+_check_ "$0" || _check_ "${BASH_SOURCE[0]}" || _check_ "./." || {
+ eval 'echo ${.sh.file}' 1>/dev/null 2>&1 && _check_ "${.sh.file}"
+} || {
+ eval 'echo ${(%):-%x}' 1>/dev/null 2>&1 && _check_ "${(%):-%x}"
+}
+if [ "X${CURRENT}X" = 'XX' ]
 then
-  echo "ERROR: Cannot locate 'build.sh'."
-  echo "Try executing rather than sourcing it."
+  echo "ERROR: Cannot locate this script 'build.sh'. "
+  echo 'Try executing it, rather than sourcing it. '
   return 1
-else
-  BASH_CWD=$(dirname $(realpath $CURRENT))
-  REPO_ROOT=$(cat $BASH_CWD/.gitkeepcache)
-  if [ "X${REPO_ROOT}X" = "XX" ]
-  then
-    echo "ERROR: Run 'setup.sh' first!"
-    return 1
-  fi
-  echo -n > $BASH_CWD/.gitkeepcache
-  mkdir -p $REPO_ROOT/build || return $?
-  build $REPO_ROOT $EIGEN_HOME
-  return $?
 fi
+REPO_HOME=$(cat "$CURRENT/.gitkeepcache")
+if [ "X${REPO_HOME}X" = 'XX' ]
+then
+  echo "ERROR: Run 'setup.sh' first! "
+  return 1
+fi
+mkdir -p -- "$REPO_HOME/build" || return
+_main_ "$EIGEN_HOME" || return
+
+_is_install='Y'
+if [ "X${REPO_NAME##*.}X" = 'X.gitX' ]
+then
+  echo "WARNING: 'EIGEN_HOME' is in the repository '$REPO_NAME', which is not recommended."
+  printf 'Are you sure to install Eigen3 in %s ([No]/Yes)? ' "'$_PREFIX_'"
+  read -r _user_option
+  _is_install=$(printf '%s' "$_user_option" | tr '[:lower:]' '[:upper:]')
+fi
+if [ "X${_is_install%ES}X" != 'XYX' ]; then return 0; fi
+if [ ! -f "$REPO_HOME/CMakeLists.txt" ]
+then
+  echo "ERROR: File not found '$REPO_HOME/CMakeLists.txt'. "
+  echo 'Something went wrong! Aborted. '
+  return 1
+fi
+cmake -S "$REPO_HOME" -B "$REPO_HOME/build" \
+ -DCMAKE_INSTALL_PREFIX="$_PREFIX_" \
+ -DCMAKE_BUILD_TYPE=Release \
+ -DCMAKE_VERBOSE_MAKEFILE=OFF \
+ -DEIGEN_BUILD_DEMOS=OFF \
+ -DEIGEN_BUILD_DOC=OFF \
+ -DEIGEN_BUILD_TESTING=OFF \
+ -DEIGEN_BUILD_PKGCONFIG=ON \
+ -DEIGEN_BUILD_BTL=OFF \
+ -DEIGEN_BUILD_BLAS=OFF \
+ -DEIGEN_BUILD_LAPACK=OFF \
+ -DEIGEN_BUILD_SPBENCH=OFF \
+ -DEIGEN_BUILD_AOCL_BENCH=OFF \
+ -DCMAKE_C_COMPILER="$(command -v gcc)" \
+ -DCMAKE_CXX_COMPILER="$(command -v g++)"
+if [ $? -ne 0 ]; then return; fi
+make -C "$REPO_HOME/build" install || return
+if [ -d "$_PREFIX_/share/eigen3/cmake" ]
+then
+  mkdir -p "$_PREFIX_/lib/cmake" &&
+  cd "$_PREFIX_/lib/cmake" ||
+  return
+  ln -s ../../share/eigen3/cmake eigen3
+  cd - 1>/dev/null
+fi
+_PREFIX_="$_PREFIX_${CMAKE_PREFIX_PATH:+:}"
+export CMAKE_PREFIX_PATH="$_PREFIX_$CMAKE_PREFIX_PATH"
