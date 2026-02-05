@@ -15,12 +15,6 @@ _main_() {
     echo '# Modify the above lines first! '
     return 1
   fi
-  echo "X$1X" | grep '[[:space:]]' 1>/dev/null
-  if [ $? -eq 0 ]
-  then
-    echo "ERROR: 'EIGEN_HOME' should not contain space characters '$1'. "
-    return 1
-  fi
   { mkdir -p -- "$1" && cd -- "$1"; } || return
   export _PREFIX_=$(pwd) || return
   export REPO_NAME=$(git remote get-url origin 2>/dev/null)

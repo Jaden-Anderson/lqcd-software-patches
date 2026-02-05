@@ -1,59 +1,74 @@
-#!/usr/bin/env bash
+#!/bin/sh
 REPO_ROOT=/path/to/an-empty-directory/where/you/would/store/the-source-code
 # Modify the above lines first!
-main() {
-  if [ $3 != "qmp.git" ]
+unset -f _main_ _check_
+
+_main_() {
+  if [ "X$1X" = 'XX' ]
   then
-    git clone https://github.com/usqcd-software/qmp.git $2
-    if [ $? -ne 0 ]; then return $?; fi
-  else
-    git -C $2 pull || return $?
+    echo "ERROR: Missing environment variable; 'REPO_ROOT' should not be set empty! "
+    return 1
   fi
-  if [ -f $1/patch.diff ]
+  if [ "X$1X" = 'X/path/to/an-empty-directory/where/you/would/store/the-source-codeX' ]
   then
-    git apply --directory=$2 $1/patch.diff
-    if [ $? -ne 0 ]; then return $?; fi
+    echo 'REPO_ROOT=/path/to/an-empty-directory/where/you/would/store/the-source-code '
+    echo '# Modify the above lines first! '
+    return 1
   fi
-  echo "Setup succeeded, patches applied."
-  echo "Now you may modify the first few lines in 'build.sh' and then run it."
-  echo -n $2 > $1/.gitkeepcache
-  return 0;
+  echo "X$1X" | grep '[[:space:]]' 1>/dev/null
+  if [ $? -eq 0 ]
+  then
+    echo "ERROR: 'REPO_ROOT' should not contain space characters '$1'. "
+    return 1
+  fi
+  { mkdir -p -- "$1" && cd -- "$1" ; } || return
+  export REPO_HOME=$(pwd) || return
+  export REPO_NAME=$(git remote get-url origin 2>/dev/null)
+  cd - 1>/dev/null
+  return 0
 }
 
-setup() {
-  if [ $# -gt 2 ]
-  then
-    echo "ERROR: 'REPO_ROOT' should not contain spaces '${@:2}'"
-    return 1
-  fi
-  if [ "X$2X" = "XX" ]
-  then
-    echo "ERROR: Missing environment variable; 'REPO_ROOT' should not be set empty!"
-    return 1
-  fi
-  if [ $2 = "/path/to/an-empty-directory/where/you/would/store/the-source-code" ]
-  then
-    echo "REPO_ROOT=/path/to/an-empty-directory/where/you/would/store/the-source-code"
-    echo "# Modify the above lines first!"
-    return 1
-  fi
-  mkdir -p $2 && cd $2 || return $?
-  local repo_name=$(git remote get-url origin 2> /dev/null)
-  cd - 1> /dev/null
-  main $1 $(realpath $2) $(basename .xxx/$repo_name)
-  return $?;
+_check_() {
+  if [ "X$1X" = 'XX' ]; then return 1; fi
+  cd -- "${1%/*}" 2>/dev/null || return
+  if [ ! -f setup.sh ]; then return 1; fi
+  if [ ! -f .gitkeepcache ]; then return 1; fi
+  export CURRENT=$(pwd) || return
+  cd - 1>/dev/null
+  return 0
 }
 
-CURRENT=$0
-if [ "X${CURRENT:0:1}X" = "X-X" ]; then CURRENT=${BASH_SOURCE[0]}; fi
-if [ "X${CURRENT}X" = "XX" ]; then CURRENT=$(pwd); fi
-if [ ! -f $CURRENT/.gitkeepcache ]
+unset CURRENT REPO_HOME REPO_NAME
+_check_ "$0" || _check_ "${BASH_SOURCE[0]}" || _check_ "./." || {
+ eval 'echo ${.sh.file}' 1>/dev/null 2>&1 && _check_ "${.sh.file}"
+} || {
+ eval 'echo ${(%):-%x}' 1>/dev/null 2>&1 && _check_ "${(%):-%x}"
+}
+if [ "X${CURRENT}X" = 'XX' ]
 then
-  echo "ERROR: Cannot locate 'setup.sh'."
-  echo "Try executing rather than sourcing it."
+  echo "ERROR: Cannot locate this script 'setup.sh'. "
+  echo 'Try executing it, rather than sourcing it. '
   return 1
-else
-  BASH_CWD=$(dirname $(realpath $CURRENT))
-  setup $BASH_CWD $REPO_ROOT
-  return $?
 fi
+printf '' > "$CURRENT/.gitkeepcache" || return
+_main_ "$REPO_ROOT" || return
+
+REPO_URL='https://github.com/usqcd-software/qmp.git'
+if [ "X${REPO_NAME##*/}X" = 'Xqmp.gitX' ]
+then
+  git -C "$REPO_HOME" pull ||
+  return
+else
+  git clone "$REPO_URL" "$REPO_HOME" ||
+  return
+fi
+if [ -f "$CURRENT/patch.diff" ]
+then
+  git apply \
+   --directory="$REPO_HOME" \
+   "$CURRENT/patch.diff" ||
+  return
+fi
+echo 'Setup succeeded, patches applied. '
+echo "Now you may modify the first few lines in 'build.sh' and then run it. "
+printf '%s' "$REPO_HOME" > "$CURRENT/.gitkeepcache"

@@ -1,120 +1,104 @@
-#!/usr/bin/env bash
+#!/bin/sh
 QIO_HOME=/path/where/you/would/install/qio
 LIME_HOME=/path/where/you/have/installed/c-lime
 # Modify the lines above first!
-main() {
-  local home=$(realpath $2)
-  local lime=$(realpath $3)
-  local option is_install=yes
-  if [ "X${4:0-4}X" = "X.gitX" ]
+unset -f _main_ _check_
+
+_main_() {
+  if [ "X$1X" = 'XX' ]
   then
-    echo "WARNING: 'QIO_HOME' is in the repository '$4', which is not recommended."
-    read -p "Are you sure to install QIO in '$home' ([no]/yes)? " option
-    case "${option,,}" in
-      y|yes) unset option;;
-      *) unset is_install;;
-    esac
-  fi
-  if [ ! $is_install ]; then return 0; fi
-  if [ ! -f $1/CMakeLists.txt ]
-  then
-    echo "ERROR: Cannot find file '$1/CMakeLists.txt'."
+    echo "ERROR: Missing environment variable; 'QIO_HOME' should not be set empty! "
     return 1
   fi
-  cmake -B $1/build -S $1 \
-  -DCMAKE_INSTALL_PREFIX=$home \
-  -DCLime_DIR=$lime \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DQIO_ENABLE_PARALLEL_BUILD=ON \
-  -DQIO_ENABLE_PARALLEL_IO=ON \
-  -DQIO_ENABLE_QMP_ROUTE=ON \
-  -DQIO_ENABLE_OUTPUT_BUFFERING=ON \
-  -DQIO_BUILD_TESTS=ON \
-  -DQIO_ENABLE_SANITIZERS=OFF \
-  -DCMAKE_C_COMPILER=$(which gcc) \
-  -DCMAKE_C_FLAGS="-O3 -fPIC"
-  if [ $? -ne 0 ]; then return $?; fi
-  make -C $1/build -j$(nproc) || return $?
-  make -C $1/build install || return $?
-  local prefix
-  if [ "X${CMAKE_PREFIX_PATH}X" = "XX" ]
+  if [ "X$2X" = 'XX' ]
   then
-    prefix=$home
-  else
-    prefix=${home}:${CMAKE_PREFIX_PATH}
+    echo "ERROR: Missing environment variable; 'LIME_HOME' should not be set empty! "
+    return 1
   fi
-  export CMAKE_PREFIX_PATH=$prefix
-  return 0;
+  _is_modified='Y'
+  if [ "X$1X" = 'X/path/where/you/would/install/qioX' ]
+  then
+    echo 'QIO_HOME=/path/where/you/would/install/qio '
+    _is_modified='N'
+  fi
+  if [ "X$2X" = 'X/path/where/you/have/installed/c-limeX' ]
+  then
+    echo 'LIME_HOME=/path/where/you/have/installed/c-lime '
+    _is_modified='N'
+  fi
+  if [ "X${_is_modified}X" != 'XYX' ]
+  then
+    echo '# Modify the lines above first! '
+    return 1
+  fi
+  { cd -- "$2" && cd - 1> /dev/null; } || return
+  { mkdir -p -- "$1" && cd -- "$1"; } || return
+  export _PREFIX_=$(pwd) || return
+  export REPO_NAME=$(git remote get-url origin 2>/dev/null)
+  cd - 1>/dev/null
+  return 0
 }
 
-build() {
-  if [ $# -gt 3 ]
-  then
-    echo "ERROR: 'LIME_HOME' should not contain spaces '${@:3}'"
-    return 1
-  fi
-  if [ "X$3X" = "XX" ]
-  then
-    echo "ERROR: Missing environment variable; 'LIME_HOME' should not be set empty!"
-    return 1
-  fi
-  local code=0
-  if [ $2 = "/path/where/you/would/install/qio" ]
-  then
-    echo "QIO_HOME=/path/where/you/would/install/qio"
-    code=$(expr $code + 1)
-  fi
-  if [ $3 = "/path/where/you/have/installed/c-lime" ]
-  then
-    echo "LIME_HOME=/path/where/you/have/installed/c-lime"
-    code=$(expr $code + 1)
-  fi
-  if [ $code -ne 0 ]
-  then
-    echo "# Modify the lines above first!"
-    return $code
-  fi
-  cd $3 && cd - 1> /dev/null || return $?
-  mkdir -p $2 && cd $2 || return $?
-  local repo_name=$(git remote get-url origin 2> /dev/null)
-  cd - 1> /dev/null
-  main $1 $2 $3 $(basename .xxx/$repo_name)
-  return $?;
+_check_() {
+  if [ "X$1X" = 'XX' ]; then return 1; fi
+  cd -- "${1%/*}" 2>/dev/null || return
+  if [ ! -f build.sh ]; then return 1; fi
+  if [ ! -f .gitkeepcache ]; then return 1; fi
+  export CURRENT=$(pwd) || return
+  cd - 1>/dev/null
+  return 0
 }
 
-check() {
-  if [ $# -gt 2 ]
-  then
-    echo "ERROR: 'QIO_HOME' should not contain spaces '${@:2}'"
-    return 1
-  fi
-  if [ "X$2X" = "XX" ]
-  then
-    echo "ERROR: Missing environment variable; 'QIO_HOME' should not be set empty!"
-    return 1
-  fi
-  return 0;
+unset CURRENT REPO_HOME REPO_NAME _PREFIX_
+_check_ "$0" || _check_ "${BASH_SOURCE[0]}" || _check_ "./." || {
+ eval 'echo ${.sh.file}' 1>/dev/null 2>&1 && _check_ "${.sh.file}"
+} || {
+ eval 'echo ${(%):-%x}' 1>/dev/null 2>&1 && _check_ "${(%):-%x}"
 }
-
-CURRENT=$0
-if [ "X${CURRENT:0:1}X" = "X-X" ]; then CURRENT=${BASH_SOURCE[0]}; fi
-if [ "X${CURRENT}X" = "XX" ]; then CURRENT=$(pwd); fi
-if [ ! -f $CURRENT/.gitkeepcache ]
+if [ "X${CURRENT}X" = 'XX' ]
 then
-  echo "ERROR: Cannot locate 'build.sh'."
-  echo "Try executing rather than sourcing it."
+  echo "ERROR: Cannot locate this script 'build.sh'. "
+  echo 'Try executing it, rather than sourcing it. '
   return 1
-else
-  BASH_CWD=$(dirname $(realpath $CURRENT))
-  REPO_ROOT=$(cat $BASH_CWD/.gitkeepcache)
-  if [ "X${REPO_ROOT}X" = "XX" ]
-  then
-    echo "ERROR: Run 'setup.sh' first!"
-    return 1
-  fi
-  echo -n > $BASH_CWD/.gitkeepcache
-  mkdir -p $REPO_ROOT/build || return $?
-  check $REPO_ROOT $QIO_HOME || return $?
-  build $REPO_ROOT $QIO_HOME $LIME_HOME
-  return $?
 fi
+REPO_HOME=$(cat "$CURRENT/.gitkeepcache")
+if [ "X${REPO_HOME}X" = 'XX' ]
+then
+  echo "ERROR: Run 'setup.sh' first! "
+  return 1
+fi
+mkdir -p -- "$REPO_HOME/build" || return
+_main_ "QIO_HOME" "$LIME_HOME" || return
+
+_is_install='Y'
+if [ "X${REPO_NAME##*.}X" = 'X.gitX' ]
+then
+  echo "WARNING: 'QIO_HOME' is in the repository '$REPO_NAME', which is not recommended."
+  printf 'Are you sure to install QIO in %s ([No]/Yes)? ' "'$_PREFIX_'"
+  read -r _user_option
+  _is_install=$(printf '%s' "$_user_option" | tr '[:lower:]' '[:upper:]')
+fi
+if [ "X${_is_install%ES}X" != 'XYX' ]; then return 0; fi
+if [ ! -f "$REPO_HOME/CMakeLists.txt" ]
+then
+  echo "ERROR: File not found '$REPO_HOME/CMakeLists.txt'. "
+  echo 'Something went wrong! Aborted. '
+  return 1
+fi
+cmake -S "$REPO_HOME" -B "$REPO_HOME/build" \
+ -DCMAKE_INSTALL_PREFIX="$_PREFIX_" \
+ -DCLime_DIR="$LIME_HOME" \
+ -DCMAKE_BUILD_TYPE=Release \
+ -DQIO_ENABLE_PARALLEL_BUILD=ON \
+ -DQIO_ENABLE_PARALLEL_IO=ON \
+ -DQIO_ENABLE_QMP_ROUTE=ON \
+ -DQIO_ENABLE_OUTPUT_BUFFERING=ON \
+ -DQIO_BUILD_TESTS=ON \
+ -DQIO_ENABLE_SANITIZERS=OFF \
+ -DCMAKE_C_COMPILER="$(command -v gcc)" \
+ -DCMAKE_C_FLAGS='-O3 -fPIC'
+if [ $? -ne 0 ]; then return; fi
+make -C "$REPO_HOME/build" -j$(nproc) || return
+make -C "$REPO_HOME/build" install || return
+_PREFIX_="$_PREFIX_${CMAKE_PREFIX_PATH:+:}"
+export CMAKE_PREFIX_PATH="$_PREFIX_$CMAKE_PREFIX_PATH"
