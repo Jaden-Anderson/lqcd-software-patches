@@ -22,8 +22,8 @@ _main_() {
     return 1
   fi
   { mkdir -p -- "$1" && cd -- "$1" ; } || return
-  export REPO_HOME=$(pwd) || return
-  export REPO_NAME=$(git remote get-url origin 2>/dev/null)
+  REPO_HOME=$(pwd) || return
+  REPO_NAME=$(git remote get-url origin 2>/dev/null)
   cd - 1>/dev/null
   return 0
 }
@@ -33,7 +33,7 @@ _check_() {
   cd -- "${1%/*}" 2>/dev/null || return
   if [ ! -f setup.sh ]; then return 1; fi
   if [ ! -f .gitkeepcache ]; then return 1; fi
-  export CURRENT=$(pwd) || return
+  CURRENT=$(pwd) || return
   cd - 1>/dev/null
   return 0
 }
@@ -62,13 +62,21 @@ else
   git clone "$REPO_URL" "$REPO_HOME" ||
   return
 fi
+mkdir -p "$REPO_HOME/build" || return
 if [ -f "$CURRENT/patch.diff" ]
 then
-  git apply \
-   --directory="$REPO_HOME" \
+  git -C "$REPO_HOME" \
+   apply --verbose \
    "$CURRENT/patch.diff" ||
   return
+  git -C "$REPO_HOME" \
+   add "$REPO_HOME" &&
+  git -C "$REPO_HOME" \
+   -c user.name='Jaden Anderson' \
+   -c user.email='wangtx@ihep.ac.cn' \
+   commit -m 'Apply patches' 1>/dev/null ||
+  return
 fi
-echo 'Setup succeeded, patches applied. '
+echo 'Setup succeeded, patches applied (if any). '
 echo "Now you may modify the first few lines in 'build.sh' and then run it. "
 printf '%s' "$REPO_HOME" > "$CURRENT/.gitkeepcache"

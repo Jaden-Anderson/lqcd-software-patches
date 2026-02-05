@@ -31,10 +31,10 @@ _main_() {
     echo '# Modify the lines above first! '
     return 1
   fi
-  { cd -- "$2" && cd - 1> /dev/null; } || return
+  { cd -- "$2" && _LIME_PATH=$(pwd) && cd - 1> /dev/null; } || return
   { mkdir -p -- "$1" && cd -- "$1"; } || return
-  export _PREFIX_=$(pwd) || return
-  export REPO_NAME=$(git remote get-url origin 2>/dev/null)
+  _PREFIX_=$(pwd) || return
+  REPO_NAME=$(git remote get-url origin 2>/dev/null)
   cd - 1>/dev/null
   return 0
 }
@@ -44,7 +44,7 @@ _check_() {
   cd -- "${1%/*}" 2>/dev/null || return
   if [ ! -f build.sh ]; then return 1; fi
   if [ ! -f .gitkeepcache ]; then return 1; fi
-  export CURRENT=$(pwd) || return
+  CURRENT=$(pwd) || return
   cd - 1>/dev/null
   return 0
 }
@@ -67,8 +67,7 @@ then
   echo "ERROR: Run 'setup.sh' first! "
   return 1
 fi
-mkdir -p -- "$REPO_HOME/build" || return
-_main_ "QIO_HOME" "$LIME_HOME" || return
+_main_ "$QIO_HOME" "$LIME_HOME" || return
 
 _is_install='Y'
 if [ "X${REPO_NAME##*.}X" = 'X.gitX' ]
@@ -85,9 +84,11 @@ then
   echo 'Something went wrong! Aborted. '
   return 1
 fi
-cmake -S "$REPO_HOME" -B "$REPO_HOME/build" \
+cmake -Wno-dev \
+ -S "$REPO_HOME" \
+ -B "$REPO_HOME/build" \
  -DCMAKE_INSTALL_PREFIX="$_PREFIX_" \
- -DCLime_DIR="$LIME_HOME" \
+ -DCLime_DIR="$_LIME_PATH" \
  -DCMAKE_BUILD_TYPE=Release \
  -DQIO_ENABLE_PARALLEL_BUILD=ON \
  -DQIO_ENABLE_PARALLEL_IO=ON \
@@ -101,4 +102,4 @@ if [ $? -ne 0 ]; then return; fi
 make -C "$REPO_HOME/build" -j$(nproc) || return
 make -C "$REPO_HOME/build" install || return
 _PREFIX_="$_PREFIX_${CMAKE_PREFIX_PATH:+:}"
-export CMAKE_PREFIX_PATH="$_PREFIX_$CMAKE_PREFIX_PATH"
+CMAKE_PREFIX_PATH="$_PREFIX_$CMAKE_PREFIX_PATH"
