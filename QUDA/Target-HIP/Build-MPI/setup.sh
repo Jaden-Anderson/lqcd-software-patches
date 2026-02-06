@@ -103,7 +103,7 @@ then
   git -C "$REPO_HOME" \
    add "$REPO_HOME" &&
   git -C "$REPO_HOME" \
-   -c user.name='Jaden Anderson' \
+   -c user.name='Jaden-Anderson' \
    -c user.email='wangtx@ihep.ac.cn' \
    commit -m 'Apply patches' 1>/dev/null ||
   return
