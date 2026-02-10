@@ -34,7 +34,7 @@ _main_() {
   fi
   if [ "X$3X" = 'X/path/where/you/have/installed/eigen3X' ]
   then
-    echo 'EIGEN_HOME=/path/where/you/have/installed/eigen '
+    echo 'EIGEN_HOME=/path/where/you/have/installed/eigen3 '
     _is_modified='N'
   fi
   if [ "X${_is_modified}X" != 'XYX' ]
