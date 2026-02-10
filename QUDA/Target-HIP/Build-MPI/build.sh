@@ -8,7 +8,7 @@ unset -f _main_ _check_
 _main_() {
   if [ "X$1X" = 'XX' ]
   then
-    echo "ERROR: Missing environment variable; 'QIO_HOME' should not be set empty! "
+    echo "ERROR: Missing environment variable; 'QUDA_HOME' should not be set empty! "
     return 1
   fi
   if [ "X$2X" = 'XX' ]
