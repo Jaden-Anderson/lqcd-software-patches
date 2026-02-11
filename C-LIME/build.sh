@@ -79,7 +79,7 @@ make -C "$REPO_HOME/build" install || return
 if [ -f "$_PREFIX_/bin"/lime* ]
 then
   mkdir -p ~/.local/bin 2> /dev/null &&
-  ln -s "$_PREFIX_/bin"/lime* ~/.local/bin/ 2>/dev/null
+  ln -s "$_PREFIX_/bin"/lime_* ~/.local/bin/ 2>/dev/null
 fi
 _PREFIX_="$_PREFIX_${CMAKE_PREFIX_PATH:+:}"
 CMAKE_PREFIX_PATH="$_PREFIX_$CMAKE_PREFIX_PATH"
