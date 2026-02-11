@@ -3,6 +3,7 @@ QUDA_HOME=/path/where/you/would/install/quda
 QMP_HOME=/path/where/you/have/installed/qmp
 EIGEN_HOME=/path/where/you/have/installed/eigen3
 QIO_HOME=/path/where/you/have/installed/qio
+LIME_HOME=/path/where/you/have/installed/c-lime
 # Modify the lines above first!
 unset -f _main_ _check_
 
@@ -27,6 +28,11 @@ _main_() {
     echo "ERROR: Missing environment variable; 'QIO_HOME' should not be set empty! "
     return 1
   fi
+  if [ "X$5X" = 'XX' ]
+  then
+    echo "ERROR: Missing environment variable; 'LIME_HOME' should not be set empty! "
+    return 1
+  fi
   _is_modified='Y'
   if [ "X$1X" = 'X/path/where/you/would/install/qudaX' ]
   then
@@ -48,6 +54,11 @@ _main_() {
     echo 'QIO_HOME=/path/where/you/have/installed/qio '
     _is_modified='N'
   fi
+  if [ "X$5X" = 'X/path/where/you/have/installed/c-limeX' ]
+  then
+    echo 'LIME_HOME=/path/where/you/have/installed/c-lime '
+    _is_modified='N'
+  fi
   if [ "X${_is_modified}X" != 'XYX' ]
   then
     echo '# Modify the lines above first! '
@@ -56,6 +67,7 @@ _main_() {
   { cd -- "$2" && _MPI_PATH=$(pwd) && cd - 1> /dev/null; } || return
   { cd -- "$3" && _EIGEN_PATH=$(pwd) && cd - 1> /dev/null; } || return
   { cd -- "$4" && _QIO_PATH=$(pwd) && cd - 1> /dev/null; } || return
+  { cd -- "$5" && _LIME_PATH=$(pwd) && cd - 1> /dev/null; } || return
   { mkdir -p -- "$1" && cd -- "$1"; } || return
   _PREFIX_=$(pwd) || return
   REPO_NAME=$(git remote get-url origin 2>/dev/null)
@@ -91,7 +103,7 @@ then
   echo "ERROR: Run 'setup.sh' first! "
   return 1
 fi
-_main_ "$QUDA_HOME" "$MPI_HOME" "$EIGEN_HOME" "$QIO_HOME" || return
+_main_ "$QUDA_HOME" "$MPI_HOME" "$EIGEN_HOME" "$QIO_HOME" "$LIME_HOME" || return
 
 _is_install='Y'
 if [ "X${REPO_NAME##*.}X" = 'X.gitX' ]
@@ -108,8 +120,8 @@ then
   echo 'Something went wrong! Aborted. '
   return 1
 fi
-_QMPIO_PATH="${_QMP_PATH}:${_QIO_PATH}${CMAKE_PREFIX_PATH:+:}"
-CMAKE_PREFIX_PATH="$_QMPIO_PATH$CMAKE_PREFIX_PATH"
+_USQCD_PATH="${_QMP_PATH}:${_QIO_PATH}:${_LIME_PATH}${CMAKE_PREFIX_PATH:+:}"
+CMAKE_PREFIX_PATH="$_USQCD_PATH$CMAKE_PREFIX_PATH"
 _CXX_PATH="$(command -v c++)"
 _CXX_LD_LIB="${_CXX_PATH%/bin/*}/lib64"
 _LINKER="-L$_CXX_LD_LIB -Wl,-rpath,$_CXX_LD_LIB"
@@ -120,6 +132,7 @@ cmake -Wno-dev \
  -DQMP_DIR="$_QMP_PATH/lib/cmake/QMP" \
  -DEIGEN_INCLUDE_DIR="$_EIGEN_PATH/include/eigen3" \
  -DQIO_DIR="$_QIO_PATH/lib/cmake/QIO" \
+ -DClime_DIR="$_LIME_PATH/lib/cmake/CLime" \
  -DCMAKE_BUILD_TYPE=RELEASE \
  -DQUDA_BUILD_SHAREDLIB=ON \
  -DQUDA_TARGET_TYPE=HIP \
